@@ -35,5 +35,12 @@ A full-stack MERN (MongoDB, Express, React, Node.js) web app to help job seekers
 
 ---
 
-## 📂 Folder Structure
+## ✅ Status
+Project is in progress — currently has core CRUD functionality. AI resume analysis is the next step.
+
+---
+
+##✍️ Author
+James Patrick De Mesa — https://github.com/SaucesCode
+
 
