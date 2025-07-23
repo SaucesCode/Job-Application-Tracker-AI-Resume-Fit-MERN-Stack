@@ -40,7 +40,7 @@ Project is in progress — currently has core CRUD functionality. AI resume anal
 
 ---
 
-##✍️ Author
+## ✍️ Author
 James Patrick De Mesa — https://github.com/SaucesCode
 
 
