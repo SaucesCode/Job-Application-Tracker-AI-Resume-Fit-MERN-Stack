@@ -39,7 +39,7 @@ export const updateJob = async (req, res) => {
 export const deleteJob = async (req, res) => {
   const job = await JobApplication.findById(req.params.id);
   if (job && job.userId.toString() === req.user._id.toString()) {
-    await job.remove();
+    await job.deleteOne();
     res.json({ message: "Job deleted" });
   } else {
     res.status(404).json({ message: "Job not found or not authorized" });

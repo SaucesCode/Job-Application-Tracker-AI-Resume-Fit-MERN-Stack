@@ -38,7 +38,10 @@ const Navbar = () => {
             <div className="p-2 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg">
               <Briefcase className="w-6 h-6 text-white" />
             </div>
-            <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <h1
+              onClick={() => navigate("/dashboard")}
+              className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent cursor-pointer"
+            >
               JobTracker Pro
             </h1>
           </div>

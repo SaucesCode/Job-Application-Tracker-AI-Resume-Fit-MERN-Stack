@@ -11,8 +11,11 @@ import {
   Users,
 } from "lucide-react";
 import { useNavigate } from "react-router";
+import api from "../services/api";
 
-const JobCard = ({ job }) => {
+const JobCard = ({ job, onDeleted }) => {
+  const navigate = useNavigate();
+  const userInfo = JSON.parse(localStorage.getItem("userInfo"));
   const getStatusConfig = status => {
     const configs = {
       applied: {
@@ -39,7 +42,6 @@ const JobCard = ({ job }) => {
     return configs[status] || configs.applied;
   };
 
-  const navigate = useNavigate();
   const statusConfig = getStatusConfig(job.status);
   const StatusIcon = statusConfig.icon;
 
@@ -49,9 +51,10 @@ const JobCard = ({ job }) => {
       await api.delete(`/jobs/${job._id}`, {
         headers: { Authorization: `Bearer ${userInfo.token}` },
       });
-      onDeleted(job._id); // notify parent
+      onDeleted(job._id);
     } catch (err) {
       alert("Failed to delete job.");
+      console.log("Error: ", err.message);
     }
   };
 

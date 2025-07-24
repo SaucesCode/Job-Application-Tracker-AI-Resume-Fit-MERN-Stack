@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import {
   Search,
   Filter,
@@ -16,12 +16,31 @@ import Navbar from "../components/Navbar";
 import StatsCard from "../components/StatsCard";
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+  const userInfo = JSON.parse(localStorage.getItem("userInfo"));
   const [jobs, setJobs] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
-  const navigate = useNavigate();
 
-  const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 3;
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+
+  const filteredJobs = jobs.filter(job => {
+    const matchesSearch =
+      job.position.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      job.company.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFilter = filterStatus === "all" || job.status === filterStatus;
+    return matchesSearch && matchesFilter;
+  });
+
+  // Use filteredJobs instead of full jobs
+  const currentJobs = filteredJobs.slice(indexOfFirstItem, indexOfLastItem);
+
+  // Total pages for pagination
+  const totalPages = Math.ceil(filteredJobs.length / itemsPerPage);
 
   useEffect(() => {
     if (!userInfo) {
@@ -45,21 +64,16 @@ const Dashboard = () => {
     fetchJobs();
   }, [navigate]);
 
-  const filteredJobs = jobs.filter(job => {
-    const matchesSearch =
-      job.position.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.company.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = filterStatus === "all" || job.status === filterStatus;
-    return matchesSearch && matchesFilter;
-  });
-
   const stats = {
     total: jobs.length,
     applied: jobs.filter(j => j.status === "applied").length,
-    interviews: jobs.filter(j => j.status === "interview").length,
+    interviews: jobs.filter(j => j.status === "interviewing").length,
     offers: jobs.filter(j => j.status === "offer").length,
   };
 
+  const handleDelete = deletedId => {
+    setJobs(prevJobs => prevJobs.filter(job => job._id !== deletedId));
+  };
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <Navbar />
@@ -141,12 +155,12 @@ const Dashboard = () => {
             <div className="flex items-center space-x-2 text-sm text-gray-500">
               <BarChart3 className="w-4 h-4" />
               <span>
-                {filteredJobs.length} of {jobs.length} applications
+                {currentJobs.length} of {jobs.length} applications
               </span>
             </div>
           </div>
 
-          {filteredJobs.length === 0 ? (
+          {currentJobs.length === 0 ? (
             <div className="text-center py-12">
               <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
                 <Briefcase className="w-8 h-8 text-gray-400" />
@@ -162,18 +176,34 @@ const Dashboard = () => {
                   : "Try adjusting your search terms or filters"}
               </p>
               {jobs.length === 0 && (
-                <button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105">
+                <Link
+                  to={"/create-job"}
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105"
+                >
                   Add Your First Job
-                </button>
+                </Link>
               )}
             </div>
           ) : (
             <div className="space-y-4">
-              {filteredJobs.map(job => (
-                <JobCard key={job._id} job={job} />
+              {currentJobs.map(job => (
+                <JobCard key={job._id} onDeleted={handleDelete} job={job} />
               ))}
             </div>
           )}
+        </div>
+        <div className="flex gap-2 justify-center mt-6">
+          {Array.from({ length: totalPages }, (_, index) => (
+            <button
+              key={index + 1}
+              onClick={() => setCurrentPage(index + 1)}
+              className={`px-4 py-2 rounded border ${
+                currentPage === index + 1 ? "bg-blue-600 text-white" : "bg-white text-gray-700"
+              }`}
+            >
+              {index + 1}
+            </button>
+          ))}
         </div>
       </div>
     </div>

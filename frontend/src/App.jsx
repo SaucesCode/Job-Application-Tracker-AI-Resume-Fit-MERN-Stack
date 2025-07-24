@@ -8,7 +8,7 @@ import EditJobPage from "./pages/EditJobPage";
 
 const App = () => {
   return (
-    <div>
+    <div data-theme="light">
       <Routes>
         <Route path="/" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />

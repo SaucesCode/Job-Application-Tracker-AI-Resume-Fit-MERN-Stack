@@ -36,6 +36,25 @@ const jobApplicationSchema = new mongoose.Schema(
     aiSuggestions: {
       type: String,
     },
+    // ✅ NEW FIELDS
+    salary: {
+      type: String,
+    },
+    jobType: {
+      type: String,
+      enum: ["Full-time", "Part-time", "Remote", "Freelance", "Internship", "Contract"],
+      default: "Full-time",
+    },
+
+    applicationUrl: {
+      type: String, // link to job post or application
+    },
+    contactPerson: {
+      type: String, // Recruiter's name, HR contact, etc.
+    },
+    notes: {
+      type: String, // Custom user notes, follow-up, interview notes, etc.
+    },
   },
   { timestamps: true }
 );
