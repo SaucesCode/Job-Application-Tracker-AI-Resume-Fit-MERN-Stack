@@ -1,4 +1,3 @@
-import { Form } from "react-router";
 import {
   Building2,
   Calendar,
@@ -11,11 +10,17 @@ import {
   Users,
 } from "lucide-react";
 import { useNavigate } from "react-router";
+import { useState } from "react";
 import api from "../services/api";
+import ConfirmModal from "./ConfirmModal";
+import calculateDaysSince from "../lib/calculateDaysSince";
+import JobPreviewModal from "./JobPreviewModal";
 
 const JobCard = ({ job, onDeleted }) => {
   const navigate = useNavigate();
   const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+  const [showModal, setShowModal] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const getStatusConfig = status => {
     const configs = {
       applied: {
@@ -46,7 +51,6 @@ const JobCard = ({ job, onDeleted }) => {
   const StatusIcon = statusConfig.icon;
 
   const handleDelete = async () => {
-    if (!window.confirm("Are you sure you want to delete this job?")) return;
     try {
       await api.delete(`/jobs/${job._id}`, {
         headers: { Authorization: `Bearer ${userInfo.token}` },
@@ -63,7 +67,10 @@ const JobCard = ({ job, onDeleted }) => {
       <div className="flex justify-between items-start mb-4">
         <div className="flex-1">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+            <h3
+              className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors  cursor-pointer"
+              onClick={() => setShowPreview(true)}
+            >
               {job.position}
             </h3>
             <div
@@ -78,9 +85,7 @@ const JobCard = ({ job, onDeleted }) => {
             <Building2 className="w-4 h-4" />
             <span className="font-medium">{job.company}</span>
             <span className="text-gray-400">•</span>
-            <span className="text-sm">{job.location}</span>
-            <span className="text-gray-400">•</span>
-            <span className="text-sm">{job.type}</span>
+            <span className="text-sm">{job.jobType}</span>
           </div>
 
           <div className="flex items-center space-x-4 text-sm text-gray-500">
@@ -90,18 +95,21 @@ const JobCard = ({ job, onDeleted }) => {
             </div>
             {job.salary && (
               <div className="flex items-center space-x-1">
-                <TrendingUp className="w-4 h-4" />
-                <span>{job.salary}</span>
+                <TrendingUp className="w-4 h-4 text-green-400" />
+                <span className="text-green-400">{job.salary}</span>
               </div>
             )}
           </div>
         </div>
       </div>
+      {showPreview && (
+        <JobPreviewModal jobId={job._id} onClose={() => setShowPreview(false)} />
+      )}
 
       <div className="flex items-center justify-between pt-4 border-t border-gray-100">
         <div className="flex items-center space-x-2">
           <span className="text-sm text-gray-500">
-            {Math.floor(Math.random() * 30) + 1} days ago
+            {calculateDaysSince(job.dateApplied)} days ago
           </span>
         </div>
 
@@ -114,12 +122,19 @@ const JobCard = ({ job, onDeleted }) => {
             <span className="text-sm font-medium">Edit</span>
           </button>
           <button
-            onClick={handleDelete}
+            onClick={() => setShowModal(true)}
             className="flex items-center space-x-1 px-3 py-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
           >
             <Trash2 className="w-4 h-4" />
             <span className="text-sm font-medium">Delete</span>
           </button>
+          <ConfirmModal
+            isOpen={showModal}
+            title="Delete Job"
+            message="Are you sure you want to delete this job?"
+            onCancel={() => setShowModal(false)}
+            onConfirm={handleDelete}
+          />
         </div>
       </div>
     </div>

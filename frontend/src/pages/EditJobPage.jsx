@@ -1,29 +1,19 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import StatusOption from "../components/StatusOption";
-import TipsCard from "../components/TipsCard";
+import { EditingTipsCard } from "../components/TipsCard";
 import { statusOptions } from "../data/StatusOptions";
 import api from "../services/api";
 import Navbar from "../components/Navbar";
+import toast from "react-hot-toast";
 import {
-  Briefcase,
-  LogOut,
   Building2,
   User,
   FileText,
   Calendar,
-  CheckCircle,
-  Clock,
-  Users,
-  XCircle,
-  Bookmark,
-  ArrowLeft,
   Save,
-  Bell,
   Target,
   DollarSign,
-  Edit3,
-  Lightbulb,
   Loader,
 } from "lucide-react";
 
@@ -85,6 +75,7 @@ const EditJobPage = () => {
       await api.put(`/jobs/${id}`, form, {
         headers: { Authorization: `Bearer ${userInfo.token}` },
       });
+      toast.success("Job Updated");
       navigate("/dashboard");
     } catch (err) {
       console.error("Error updating job:", err);
@@ -273,32 +264,8 @@ const EditJobPage = () => {
                   </div>
                 </div>
               </div>
-
               {/* Tips Section */}
-              <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 border border-green-100">
-                <div className="flex items-start space-x-3">
-                  <div className="p-2 bg-green-100 rounded-lg">
-                    <Lightbulb className="w-5 h-5 text-green-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-green-900 mb-2">Editing Tips</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm text-green-800">
-                      <div className="flex items-start space-x-2">
-                        <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
-                        <span>Update status as you progress</span>
-                      </div>
-                      <div className="flex items-start space-x-2">
-                        <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
-                        <span>Add interview notes and feedback</span>
-                      </div>
-                      <div className="flex items-start space-x-2">
-                        <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
-                        <span>Keep salary information updated</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <EditingTipsCard />
 
               {/* Submit Button */}
               <div className="pt-6 border-t border-gray-200">

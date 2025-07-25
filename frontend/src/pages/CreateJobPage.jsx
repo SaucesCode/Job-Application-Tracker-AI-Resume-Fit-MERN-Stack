@@ -278,7 +278,7 @@ const CreateJobPage = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => console.log("Canceling...")}
+                  onClick={() => navigate("/dashboard")}
                   className="px-6 py-4 border border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-all duration-200"
                 >
                   Cancel
