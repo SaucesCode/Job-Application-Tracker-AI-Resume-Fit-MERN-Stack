@@ -25,21 +25,17 @@ const LoginPage = () => {
       localStorage.setItem("userInfo", JSON.stringify(res.data));
       await new Promise(resolve => setTimeout(resolve, 1500));
 
-      const toastId = toast.loading("Logging in...");
       setTimeout(() => {
-        toast.success("Logged In!", {
-          id: toastId, // Replace loading toast
-          duration: 2000,
-        });
+        toast.success("Logged In!");
         navigate("/dashboard");
       }, 1500);
     } catch (err) {
-      toast.error("Login Failed. Please try again.");
+      toast.error(err.response.data.message);
       console.log("Error on login: ", err.message);
     } finally {
       setTimeout(() => {
         setIsLoading(false);
-      }, 1500);
+      }, 2000);
     }
   };
 
@@ -168,11 +164,7 @@ const LoginPage = () => {
 
               <div className="flex items-center justify-between text-sm">
                 <label className="flex items-center space-x-2 text-slate-300">
-                  <input
-                    type="checkbox"
-                    className="rounded border-white/20 bg-white/10 text-blue-600 focus:ring-blue-500"
-                  />
-                  <span>Remember me</span>
+                  <span></span>
                 </label>
                 <a href="#" className="text-blue-400 hover:text-blue-300 transition-colors">
                   Forgot password?

@@ -37,7 +37,7 @@ const RegisterPage = () => {
       toast.success("Registration successfull");
       navigate("/dashboard");
     } catch (err) {
-      toast.error("Registration Failed. Please try again.");
+      toast.error(err.response.data.message);
       console.log("Error on registration: ", err.message);
     } finally {
       setIsLoading(false);

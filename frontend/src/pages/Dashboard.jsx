@@ -17,17 +17,17 @@ import StatsCard from "../components/StatsCard";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const userInfo = JSON.parse(localStorage.getItem("userInfo"));
   const [jobs, setJobs] = useState([]);
+  const [stats, setStats] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
 
+  const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 3;
-
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-
   const filteredJobs = jobs.filter(job => {
     const matchesSearch =
       job.position.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -35,10 +35,8 @@ const Dashboard = () => {
     const matchesFilter = filterStatus === "all" || job.status === filterStatus;
     return matchesSearch && matchesFilter;
   });
-
   // Use filteredJobs instead of full jobs
   const currentJobs = filteredJobs.slice(indexOfFirstItem, indexOfLastItem);
-
   // Total pages for pagination
   const totalPages = Math.ceil(filteredJobs.length / itemsPerPage);
 
@@ -61,10 +59,22 @@ const Dashboard = () => {
       }
     };
 
+    const fetchStats = async () => {
+      try {
+        const res = await api.get("/jobs/stats", {
+          headers: { Authorization: `Bearer ${userInfo.token}` },
+        });
+        setStats(res.data);
+      } catch (err) {
+        console.error("Stats fetch failed", err);
+      }
+    };
+
     fetchJobs();
+    fetchStats();
   }, [navigate]);
 
-  const stats = {
+  const statStatus = {
     total: jobs.length,
     applied: jobs.filter(j => j.status === "applied").length,
     interviews: jobs.filter(j => j.status === "interviewing").length,
@@ -89,29 +99,29 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <StatsCard
             title="Total Applications"
-            value={stats.total}
-            change="+12%"
+            value={statStatus.total}
+            change={`${stats.percentChange > 0 ? "+" : ""}${stats.percentChange}%`}
             icon={Target}
             color="bg-gradient-to-r from-blue-500 to-blue-600"
           />
           <StatsCard
             title="Applied"
-            value={stats.applied}
-            change="+8%"
+            value={statStatus.applied}
+            change={`${stats.percentChange > 0 ? "+" : ""}${stats.percentChange}%`}
             icon={Clock}
             color="bg-gradient-to-r from-yellow-500 to-yellow-600"
           />
           <StatsCard
             title="Interviews"
-            value={stats.interviews}
-            change="+25%"
+            value={statStatus.interviews}
+            change={`${stats.percentChange > 0 ? "+" : ""}${stats.percentChange}%`}
             icon={Users}
             color="bg-gradient-to-r from-purple-500 to-purple-600"
           />
           <StatsCard
             title="Offers"
-            value={stats.offers}
-            change="+100%"
+            value={statStatus.offers}
+            change={`${stats.percentChange > 0 ? "+" : ""}${stats.percentChange}%`}
             icon={CheckCircle}
             color="bg-gradient-to-r from-green-500 to-green-600"
           />

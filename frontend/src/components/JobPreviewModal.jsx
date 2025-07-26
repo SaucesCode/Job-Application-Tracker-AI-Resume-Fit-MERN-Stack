@@ -14,6 +14,7 @@ import api from "../services/api";
 const JobPreviewModal = ({ jobId, onClose }) => {
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
+
   const userInfo = JSON.parse(localStorage.getItem("userInfo"));
 
   useEffect(() => {
