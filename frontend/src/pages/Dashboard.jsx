@@ -21,6 +21,7 @@ const Dashboard = () => {
   const [stats, setStats] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [loading, setLoading] = useState(true);
 
   const userInfo = JSON.parse(localStorage.getItem("userInfo"));
 
@@ -47,6 +48,7 @@ const Dashboard = () => {
     }
 
     const fetchJobs = async () => {
+      setLoading(true);
       try {
         const res = await api.get("/jobs", {
           headers: {
@@ -54,8 +56,10 @@ const Dashboard = () => {
           },
         });
         setJobs(res.data);
+        setLoading(false);
       } catch (err) {
         console.error("Error fetching jobs:", err);
+        setLoading(false);
       }
     };
 
@@ -84,6 +88,29 @@ const Dashboard = () => {
   const handleDelete = deletedId => {
     setJobs(prevJobs => prevJobs.filter(job => job._id !== deletedId));
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+        <Navbar />
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 rounded w-1/3 mb-8"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="h-32 bg-gray-200 rounded-xl"></div>
+              ))}
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="h-96 bg-gray-200 rounded-xl"></div>
+              <div className="h-96 bg-gray-200 rounded-xl"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <Navbar />

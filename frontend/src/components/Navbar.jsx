@@ -1,7 +1,7 @@
 import { useNavigate, Link, useLocation } from "react-router-dom";
-import { Briefcase, Plus, LogOut, BarChart3, Layout } from "lucide-react";
+import { Briefcase, Plus, LogOut, BarChart3, Layout, ChevronDown, User } from "lucide-react";
 import toast from "react-hot-toast";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -10,9 +10,14 @@ const Navbar = () => {
   const userInfo = userInfoString ? JSON.parse(userInfoString) : null;
   const getFirstName = userInfo?.name?.split(" ")[0] ?? "";
   const getAvatar = userInfo?.name?.charAt(0)?.toUpperCase() ?? "";
+  const getEmail = userInfo?.email;
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
   const [user] = useState({
     name: getFirstName,
     avatar: getAvatar,
+    email: getEmail,
   });
 
   const logout = () => {
@@ -24,8 +29,8 @@ const Navbar = () => {
         id: toastId, // Replace loading toast
         duration: 2000,
       });
-
       navigate("/"); // Redirect after logout
+      setIsDropdownOpen(false);
     }, 1500); // wait 1.5s for visual feedback
   };
 
@@ -33,13 +38,42 @@ const Navbar = () => {
     return location.pathname === path;
   };
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = event => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const menuItems = [
+    {
+      label: "Dashboard",
+      path: "/dashboard",
+      icon: Layout,
+      active: isActive("/dashboard"),
+    },
+    {
+      label: "Analytics",
+      path: "/analytics",
+      icon: BarChart3,
+      active: isActive("/analytics"),
+    },
+  ];
+
   return (
     <nav className="bg-white/80 backdrop-blur-lg border-b border-gray-200/50 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg">
+            <div className="p-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-lg">
               <Briefcase className="w-6 h-6 text-white" />
             </div>
             <h1
@@ -50,84 +84,105 @@ const Navbar = () => {
             </h1>
           </div>
 
-          {/* Navigation and Actions */}
-          <div className="flex items-center justify-between space-x-5">
-            {/* Navigation Links */}
-            <div className="hidden md:flex items-center space-x-2 pr-52">
-              <Link
-                to="/dashboard"
-                className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 transform hover:scale-105 ${
-                  isActive("/dashboard")
-                    ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                }`}
-              >
-                <Layout className="w-4 h-4" />
-                <span>Dashboard</span>
-              </Link>
-
-              <Link
-                to="/analytics"
-                className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 transform hover:scale-105 ${
-                  isActive("/analytics")
-                    ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                }`}
-              >
-                <BarChart3 className="w-4 h-4" />
-                <span>Analytics</span>
-              </Link>
-            </div>
-
-            {/* Mobile Navigation */}
-            <div className="md:hidden flex items-center space-x-2">
-              <Link
-                to="/dashboard"
-                className={`p-2 rounded-lg transition-all duration-200 ${
-                  isActive("/dashboard")
-                    ? "bg-gradient-to-r from-slate-900 via-blue-900 to-slate-800 text-white"
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                }`}
-                title="Dashboard"
-              >
-                <Layout className="w-5 h-5" />
-              </Link>
-
-              <Link
-                to="/analytics"
-                className={`p-2 rounded-lg transition-all duration-200 ${
-                  isActive("/analytics")
-                    ? "bg-gradient-to-r from-slate-900 via-blue-900 to-slate-800 text-white"
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                }`}
-                title="Analytics"
-              >
-                <BarChart3 className="w-5 h-5" />
-              </Link>
-            </div>
-
+          {/* Right Side Actions */}
+          <div className="flex items-center space-x-4">
             {/* Add Job Button */}
-            <Link
-              to="/create-job"
-              className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all duration-200 transform hover:scale-105"
+            <button
+              onClick={() => navigate("/create-job")}
+              className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all duration-200 transform hover:scale-105"
             >
               <Plus className="w-4 h-4" />
               <span className="hidden sm:inline">Add Job</span>
-            </Link>
+            </button>
 
-            {/* User Menu */}
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
-                {user.avatar}
-              </div>
-              <span className="hidden lg:inline text-gray-700 font-medium">{user.name}</span>
+            {/* User Dropdown */}
+            <div className="relative" ref={dropdownRef}>
               <button
-                onClick={logout}
-                className="p-2 text-gray-500 hover:text-red-600 transition-colors rounded-lg hover:bg-red-50"
-                title="Logout"
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
-                <LogOut className="w-5 h-5" />
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-full flex items-center justify-center text-white text-sm font-semibold">
+                  {user.avatar}
+                </div>
+                <div className="hidden md:block text-left">
+                  <p className="text-sm font-medium text-gray-700">{user.name}</p>
+                </div>
+                <ChevronDown
+                  className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${
+                    isDropdownOpen ? "rotate-180" : ""
+                  }`}
+                />
               </button>
+
+              {/* Dropdown Menu */}
+              {isDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
+                  {/* User Info Header */}
+                  <div className="px-4 py-3 border-b border-gray-100">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-full flex items-center justify-center text-white text-sm font-semibold">
+                        {user.avatar}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">{user.name}</p>
+                        <p className="text-xs text-gray-500">{user.email}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Navigation Items */}
+                  <div className="py-2">
+                    {menuItems.map(item => {
+                      const Icon = item.icon;
+                      return (
+                        <button
+                          key={item.path}
+                          onClick={() => {
+                            navigate(item.path);
+                            setIsDropdownOpen(false);
+                          }}
+                          className={`w-full flex items-center space-x-3 px-4 py-2 text-sm transition-colors ${
+                            item.active
+                              ? "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+                              : "text-gray-700 hover:bg-gray-100"
+                          }`}
+                        >
+                          <Icon className="w-4 h-4" />
+                          <span>{item.label}</span>
+                          {item.active && (
+                            <div className="ml-auto w-2 h-2 bg-white rounded-full"></div>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Divider */}
+                  <div className="border-t border-gray-100 my-2"></div>
+
+                  {/* Account Actions */}
+                  <div className="py-2">
+                    <button
+                      onClick={() => {
+                        navigate("/profile");
+                        setIsDropdownOpen(false);
+                      }}
+                      className="w-full flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    >
+                      <User className="w-4 h-4" />
+                      <span>Profile Settings</span>
+                    </button>
+
+                    <button
+                      onClick={logout}
+                      className="w-full flex items-center space-x-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      <span>Sign Out</span>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
