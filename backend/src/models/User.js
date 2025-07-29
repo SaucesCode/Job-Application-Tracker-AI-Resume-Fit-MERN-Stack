@@ -18,8 +18,13 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    bio: {
+    resumeText: {
       type: String,
+      default: "",
+    },
+    resumeFile: {
+      type: String, // File path or filename
+      default: "",
     },
   },
   { timestamps: true }

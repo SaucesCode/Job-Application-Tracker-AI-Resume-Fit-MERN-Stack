@@ -24,18 +24,19 @@ const LoginPage = () => {
       const res = await api.post("/users/login", form);
       localStorage.setItem("userInfo", JSON.stringify(res.data));
       await new Promise(resolve => setTimeout(resolve, 1500));
-
       setTimeout(() => {
-        toast.success("Logged In!");
+        toast.success("Signed In!");
         navigate("/dashboard");
       }, 1500);
     } catch (err) {
-      toast.error(err.response.data.message);
+      setTimeout(() => {
+        toast.error(err.response.data.message);
+      }, 1500);
       console.log("Error on login: ", err.message);
     } finally {
       setTimeout(() => {
         setIsLoading(false);
-      }, 2000);
+      }, 1500);
     }
   };
 

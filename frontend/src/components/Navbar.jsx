@@ -21,11 +21,11 @@ const Navbar = () => {
   });
 
   const logout = () => {
-    const toastId = toast.loading("Logging out..."); // Show loading spinner
+    const toastId = toast.loading("Signing out..."); // Show loading spinner
     setTimeout(() => {
       localStorage.removeItem("userInfo");
 
-      toast.success("Logged out!", {
+      toast.success("Signed out!", {
         id: toastId, // Replace loading toast
         duration: 2000,
       });

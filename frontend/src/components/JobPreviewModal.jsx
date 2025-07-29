@@ -14,6 +14,8 @@ import api from "../services/api";
 const JobPreviewModal = ({ jobId, onClose }) => {
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [fit, setFit] = useState(null);
+  const [loadingFit, setLoadingFit] = useState(false);
 
   const userInfo = JSON.parse(localStorage.getItem("userInfo"));
 
@@ -24,10 +26,42 @@ const JobPreviewModal = ({ jobId, onClose }) => {
           headers: { Authorization: `Bearer ${userInfo.token}` },
         });
         setJob(res.data);
+
+        // ✅ Use the saved aiFit if it exists
+        if (res.data.aiFit?.fitScore !== undefined) {
+          setFit(res.data.aiFit);
+        } else {
+          // ❌ Otherwise, call Gemini only once
+          await fetchFitScore(res.data);
+        }
+
         setLoading(false);
       } catch (err) {
         console.error("Error loading job:", err);
         setLoading(true);
+      }
+    };
+
+    const fetchFitScore = async jobData => {
+      setLoadingFit(true);
+      try {
+        const res = await api.post(
+          "/ai/fit-score",
+          {
+            jobId: jobData._id,
+            jobDescription: jobData.description,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${userInfo.token}`,
+            },
+          }
+        );
+        setFit(res.data);
+      } catch (err) {
+        console.error("Fit score failed:", err);
+      } finally {
+        setLoadingFit(false);
       }
     };
 
@@ -168,8 +202,12 @@ const JobPreviewModal = ({ jobId, onClose }) => {
               )}
             </div>
 
-            {/* AI Fit Score */}
-            {job.aiFitScore && (
+            {/* AI Fit Score from Gemini */}
+            {loadingFit ? (
+              <div className="mb-6 text-sm text-gray-500">
+                Analyzing resume vs job description...
+              </div>
+            ) : fit ? (
               <div className="mb-8 p-6 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg border border-indigo-100">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="p-2 bg-indigo-100 rounded-lg">
@@ -180,29 +218,53 @@ const JobPreviewModal = ({ jobId, onClose }) => {
                 <div className="mb-3">
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-sm font-medium text-gray-600">Fit Score:</span>
-                    <span className={`text-xl font-bold ${getFitScoreColor(job.aiFitScore)}`}>
-                      {job.aiFitScore}/100
+                    <span className={`text-xl font-bold ${getFitScoreColor(fit.fitScore)}`}>
+                      {fit.fitScore}/100
                     </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div
                       className={`h-2 rounded-full transition-all ${
-                        job.aiFitScore >= 80
+                        fit.fitScore >= 80
                           ? "bg-green-500"
-                          : job.aiFitScore >= 60
+                          : fit.fitScore >= 60
                           ? "bg-yellow-500"
                           : "bg-red-500"
                       }`}
-                      style={{ width: `${job.aiFitScore}%` }}
+                      style={{ width: `${fit.fitScore}%` }}
                     ></div>
                   </div>
                 </div>
-                {job.aiSuggestions && (
-                  <p className="text-indigo-700 text-sm leading-relaxed">
-                    {job.aiSuggestions}
-                  </p>
+                <p className="text-indigo-700 text-sm leading-relaxed mt-2">{fit.summary}</p>
+
+                {fit.matchedSkills?.length > 0 && (
+                  <div className="mt-4">
+                    <p className="text-green-700 font-semibold text-sm mb-1">
+                      ✅ Matched Skills:
+                    </p>
+                    <ul className="text-green-700 text-sm list-disc list-inside">
+                      {fit.matchedSkills.map((skill, i) => (
+                        <li key={i}>{skill}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {fit.missingSkills?.length > 0 && (
+                  <div className="mt-4">
+                    <p className="text-red-600 font-semibold text-sm mb-1">
+                      ❌ Missing Skills:
+                    </p>
+                    <ul className="text-red-600 text-sm list-disc list-inside">
+                      {fit.missingSkills.map((skill, i) => (
+                        <li key={i}>{skill}</li>
+                      ))}
+                    </ul>
+                  </div>
                 )}
               </div>
+            ) : (
+              <div className="text-red-500 mb-6">No AI fit data available.</div>
             )}
 
             {/* Job Description */}

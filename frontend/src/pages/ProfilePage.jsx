@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { User, Mail, Lock, Save, Camera, Edit } from "lucide-react";
+import { User, Mail, Lock, Save, Edit, Upload, FileText, X } from "lucide-react";
 import api from "../services/api";
 import Navbar from "../components/Navbar";
 
@@ -11,13 +11,14 @@ const ProfilePage = () => {
     name: "",
     email: "",
     password: "",
-    bio: "",
   });
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState([]);
+  const [uploadedResume, setUploadedResume] = useState(null);
 
-  const dateJoined = userInfo?.joinDate
-    ? new Date(userInfo.joinDate).toLocaleDateString("en-US", {
+  const dateJoined = user?.createdAt
+    ? new Date(user?.createdAt).toLocaleDateString("en-US", {
         year: "numeric",
         month: "long",
         day: "numeric",
@@ -25,12 +26,18 @@ const ProfilePage = () => {
     : "Unknown";
 
   useEffect(() => {
+    const saved = localStorage.getItem("uploadedResume");
+    if (saved) {
+      setUploadedResume(JSON.parse(saved));
+    }
+  }, []);
+
+  useEffect(() => {
     if (userInfo) {
       setForm({
         name: userInfo.name || "",
         email: userInfo.email || "",
         password: "",
-        bio: form.bio || "",
       });
     }
 
@@ -45,8 +52,30 @@ const ProfilePage = () => {
       }
     };
 
+    const fetchUser = async () => {
+      try {
+        const res = await api.get("/users/profile", {
+          headers: { Authorization: `Bearer ${userInfo.token}` },
+        });
+        setUser(res.data);
+      } catch (err) {
+        console.error("User fetch failed", err);
+      }
+    };
+
+    fetchUser();
     fetchStats();
   }, []);
+
+  useEffect(() => {
+    if (message) {
+      const timer = setTimeout(() => {
+        setMessage(""); // Clear message after 2 seconds
+      }, 2000);
+
+      return () => clearTimeout(timer); // cleanup
+    }
+  }, [message]);
 
   const handleChange = e => {
     const { name, value } = e.target;
@@ -79,6 +108,38 @@ const ProfilePage = () => {
       setMessage("❌ Failed to update profile.");
       setLoading(false);
     }
+  };
+
+  const handleUploadResume = async e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append("resume", file);
+
+    try {
+      const res = await api.post("/users/upload-resume", formData, {
+        headers: {
+          Authorization: `Bearer ${userInfo.token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      const resumeInfo = {
+        name: file.name,
+        size: (file.size / 1024).toFixed(1) + " KB",
+        uploadDate: new Date().toLocaleDateString(),
+      };
+      localStorage.setItem("uploadedResume", JSON.stringify(resumeInfo));
+      setUploadedResume(resumeInfo);
+
+      setMessage("✅ Resume uploaded successfully.");
+    } catch (err) {
+      setMessage("❌ Resume upload failed.");
+    }
+  };
+
+  const removeResume = () => {
+    setUploadedResume(null);
+    localStorage.removeItem("uploadedResume");
   };
 
   return (
@@ -220,17 +281,53 @@ const ProfilePage = () => {
                       disabled
                     />
                   </div>
-
-                  {/* Bio Field */}
+                  {/* Resume Upload */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Bio</label>
-                    <textarea
-                      rows={4}
-                      value={form.bio}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors resize-none"
-                      placeholder="Tell us a bit about yourself and your career goals..."
-                    ></textarea>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Upload Resume (PDF)
+                    </label>
+
+                    {!uploadedResume ? (
+                      <div
+                        className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 hover:bg-blue-50/30 transition-colors cursor-pointer"
+                        onClick={() => document.getElementById("resume-input").click()}
+                      >
+                        <input
+                          id="resume-input"
+                          type="file"
+                          accept="application/pdf"
+                          onChange={handleUploadResume}
+                          className="hidden"
+                        />
+                        <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                        <p className="text-sm text-gray-600">
+                          Click to upload or drag and drop
+                        </p>
+                        <p className="text-xs text-gray-400 mt-1">PDF files only</p>
+                      </div>
+                    ) : (
+                      <div className="border border-green-200 bg-green-50 rounded-lg p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <FileText className="w-5 h-5 text-green-600" />
+                            <div>
+                              <p className="text-sm font-medium text-gray-900">
+                                {uploadedResume.name}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {uploadedResume.size} • {uploadedResume.uploadDate}
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            onClick={removeResume}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Submit Button */}

@@ -27,14 +27,12 @@ const jobApplicationSchema = new mongoose.Schema(
     dateApplied: {
       type: Date,
     },
-    resumeUrl: {
-      type: String, // optional, stored on Cloudinary or local
-    },
-    aiFitScore: {
-      type: Number, // 0 to 100
-    },
-    aiSuggestions: {
-      type: String,
+    aiFit: {
+      fitScore: { type: Number },
+      summary: { type: String },
+      matchedSkills: [String],
+      missingSkills: [String],
+      evaluated: { type: Boolean, default: false },
     },
     // ✅ NEW FIELDS
     salary: {
