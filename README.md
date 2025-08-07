@@ -12,13 +12,7 @@ A full-stack MERN (MongoDB, Express, React, Node.js) web app to help job seekers
 - 📅 View date applied and job descriptions
 - ✏️ Edit job details any time
 - 🗑️ Delete entries with confirmation
-- 🧠 **Coming Soon**: AI Resume Fit Analysis using OpenAI/Gemini API
-
----
-
-## 🖼️ Demo
-
-> Coming soon — after deployment to Vercel & Render!
+- 🧠 AI Resume Fit Analysis using Gemini API
 
 ---
 
@@ -30,13 +24,13 @@ A full-stack MERN (MongoDB, Express, React, Node.js) web app to help job seekers
 | Backend | Node.js, Express, JWT, Mongoose |
 | Database | MongoDB Atlas |
 | Auth | JSON Web Tokens (JWT), bcrypt |
-| Future AI | OpenAI or Gemini API |
-| Deployment | Vercel (frontend) + Render/Railway (backend) |
+| AI | Gemini API |
+| Deployment | Render  |
 
 ---
 
 ## ✅ Status
-Project is in progress — currently has core CRUD functionality. AI resume analysis is the next step.
+Project is in progress — AI resume analysis still needs improvement.
 
 ---
 
